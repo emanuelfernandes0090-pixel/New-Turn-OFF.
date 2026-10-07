@@ -1,0 +1,10 @@
+{
+  "name": "Remix Turn OFF — Eficiência Energética",
+  "description": "Aplicativo oficial de diagnóstico de consumo elétrico residencial, auditoria de contas de luz, simulação de hábitos e tarifas, payback e segurança elétrica.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and settings",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "monthlyGoal": {
+          "type": "object",
+          "properties": {
+            "targetKwh": { "type": "number" },
+            "updatedAt": { "type": "string", "format": "date-time" }
+          }
+        },
+        "accessibilitySettings": {
+          "type": "object",
+          "properties": {
+            "fontScale": { "type": "number" },
+            "simpleLanguage": { "type": "boolean" },
+            "confirmImportantActions": { "type": "boolean" },
+            "theme": { "type": "string" },
+            "textSize": { "type": "string" }
+          }
+        }
+      }
+    },
+    "Diagnosis": {
+      "title": "Diagnosis",
+      "description": "A saved energy diagnosis",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "input": { "type": "object" },
+        "result": { "type": "object" },
+        "kind": { "type": "string", "enum": ["principal", "teste"] },
+        "originalDiagnosisId": { "type": "string" }
+      },
+      "required": ["userId", "createdAt", "input", "result"]
+    },
+    "Scan": {
+      "title": "Bill Scan",
+      "description": "A scanned electricity bill",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "bill": { "type": "object" }
+      },
+      "required": ["userId", "createdAt", "bill"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profile data"
+    },
+    "users/{userId}/diagnoses/{diagnosisId}": {
+      "schema": { "$ref": "#/entities/Diagnosis" },
+      "description": "User's diagnoses"
+    },
+    "users/{userId}/scans/{scanId}": {
+      "schema": { "$ref": "#/entities/Scan" },
+      "description": "User's scanned bills"
+    }
+  }
+}

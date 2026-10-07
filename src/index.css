@@ -1,0 +1,172 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Default App Theme: Deep Midnight Navy Blue (#020817 / #030712) */
+html,
+body,
+#root {
+  background-color: #020817;
+}
+
+html.dark,
+body.dark,
+.dark body,
+html.dark #root {
+  background-color: #020817;
+}
+
+/* Accessibility dynamic root text scaling: Standard default is 85% */
+html {
+  font-size: var(--app-font-scale, 85%);
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+/* High Contrast Mode: Crisp borders, deep solid backgrounds, maximum legibility */
+html.high-contrast {
+  filter: contrast(1.15);
+}
+html.high-contrast.dark,
+html.high-contrast.dark body {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+html.high-contrast:not(.dark),
+html.high-contrast:not(.dark) body {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+html.high-contrast button,
+html.high-contrast input,
+html.high-contrast select,
+html.high-contrast textarea {
+  border-width: 2px !important;
+}
+html.high-contrast .border,
+html.high-contrast [class*="border-"] {
+  border-color: currentColor !important;
+}
+
+/* Reduced Motion Mode: Complete disabling of transitions and keyframe animations */
+html.reduce-motion *,
+html.reduce-motion *::before,
+html.reduce-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Dyslexia / Enhanced Readability Font and Spacing */
+html.dyslexic-font body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Open Sans", Arial, sans-serif !important;
+  letter-spacing: 0.04em !important;
+  word-spacing: 0.08em !important;
+  line-height: 1.75 !important;
+}
+
+/* Enhanced Line & Letter Spacing */
+html.enhanced-spacing body {
+  letter-spacing: 0.035em !important;
+  line-height: 1.75 !important;
+}
+
+/* Enhanced Focus Ring for Keyboard Navigation */
+html.large-focus-ring :focus-visible {
+  outline: 3px solid #10b981 !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.35) !important;
+}
+
+/* Default accessible Focus visible */
+:focus-visible {
+  outline: 2px solid #10b981;
+  outline-offset: 2px;
+}
+
+/* Skip to Content link for Screen Readers & Keyboard users */
+.skip-to-content {
+  position: absolute;
+  top: -120px;
+  left: 1rem;
+  z-index: 9999;
+  padding: 0.75rem 1.5rem;
+  background-color: #059669;
+  color: #ffffff;
+  font-weight: 700;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+  transition: top 0.2s ease-in-out;
+}
+.skip-to-content:focus {
+  top: 1rem;
+  outline: 3px solid #ffffff;
+}
+
+/* Fluid typography and balanced spacing for all scales */
+h1, h2, h3, h4 {
+  text-wrap: balance;
+}
+
+p, span, label {
+  text-wrap: pretty;
+}
+
+/* Hide scrollbars while preserving scrolling */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Clean, professional Print / PDF Stylesheet */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font-size: 11pt !important;
+  }
+
+  /* Hide navigation, floating buttons and actions on print */
+  header,
+  nav,
+  footer,
+  #bottom-nav-bar,
+  #btn-floating-tts,
+  button,
+  .no-print {
+    display: none !important;
+  }
+
+  main {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Ensure card borders and background colors appear on print */
+  .p-6, .p-8, .rounded-3xl, .rounded-2xl {
+    break-inside: avoid;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+  }
+
+  /* Printable Header Banner */
+  .print-only {
+    display: block !important;
+  }
+}
+
+.print-only {
+  display: none;
+}

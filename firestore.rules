@@ -1,0 +1,86 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn() && request.auth.uid == userId;
+      
+      function isValidUser(data) {
+        return data.keys().hasAll(['email', 'createdAt']) &&
+               data.email is string && data.email.size() <= 256 &&
+               (data.createdAt is timestamp || data.createdAt is string);
+      }
+      
+      allow create: if isSignedIn() && request.auth.uid == userId && isValidId(userId) &&
+                    isValidUser(incoming());
+      
+      allow update: if isSignedIn() && request.auth.uid == userId &&
+                    incoming().diff(existing()).affectedKeys().hasOnly(['monthlyGoal', 'accessibilitySettings', 'updatedAt']) &&
+                    incoming().createdAt == existing().createdAt;
+    }
+
+    match /users/{userId}/diagnoses/{diagnosisId} {
+      allow read: if isSignedIn() && request.auth.uid == userId;
+      allow list: if isSignedIn() && request.auth.uid == userId && resource.data.userId == request.auth.uid;
+
+      function isValidDiagnosis(data) {
+        return data.keys().hasAll(['userId', 'createdAt', 'input', 'result']) &&
+               data.userId == request.auth.uid &&
+               (data.createdAt is timestamp || data.createdAt is string) &&
+               data.input is map &&
+               data.result is map;
+      }
+
+      allow create: if isSignedIn() && request.auth.uid == userId && isValidId(diagnosisId) &&
+                    isValidDiagnosis(incoming());
+
+      allow update: if isSignedIn() && request.auth.uid == userId &&
+                    isValidDiagnosis(incoming()) &&
+                    incoming().createdAt == existing().createdAt &&
+                    incoming().userId == existing().userId;
+                    
+      allow delete: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    match /users/{userId}/scans/{scanId} {
+      allow read: if isSignedIn() && request.auth.uid == userId;
+      allow list: if isSignedIn() && request.auth.uid == userId && resource.data.userId == request.auth.uid;
+
+      function isValidScan(data) {
+        return data.keys().hasAll(['userId', 'createdAt', 'bill']) &&
+               data.userId == request.auth.uid &&
+               (data.createdAt is timestamp || data.createdAt is string) &&
+               data.bill is map;
+      }
+
+      allow create: if isSignedIn() && request.auth.uid == userId && isValidId(scanId) &&
+                    isValidScan(incoming());
+
+      allow update: if isSignedIn() && request.auth.uid == userId &&
+                    isValidScan(incoming()) &&
+                    incoming().createdAt == existing().createdAt &&
+                    incoming().userId == existing().userId;
+
+      allow delete: if isSignedIn() && request.auth.uid == userId;
+    }
+  }
+}
