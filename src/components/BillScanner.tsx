@@ -325,6 +325,19 @@ export const BillScanner: React.FC<BillScannerProps> = ({
           URL.revokeObjectURL(objectUrl);
           const maxDim = 2400; // Resolução ampliada para não perder caracteres e dígitos de tabelas
           let { width, height } = img;
+
+          // Se a imagem já estiver dentro do limite de resolução e tamanho moderado, envie o arquivo original sem recodificação lossy
+          if (file.size <= 3.5 * 1024 * 1024 && width <= maxDim && height <= maxDim) {
+            const reader = new FileReader();
+            reader.onload = () =>
+              resolve({
+                base64: reader.result as string,
+                mimeType: file.type || "image/jpeg",
+              });
+            reader.readAsDataURL(file);
+            return;
+          }
+
           if (width > maxDim || height > maxDim) {
             if (width > height) {
               height = Math.round((height * maxDim) / width);
@@ -342,7 +355,7 @@ export const BillScanner: React.FC<BillScannerProps> = ({
             ctx.imageSmoothingEnabled = true;
             ctx.imageSmoothingQuality = "high";
             ctx.drawImage(img, 0, 0, width, height);
-            const compressed = canvas.toDataURL("image/jpeg", 0.92);
+            const compressed = canvas.toDataURL("image/jpeg", 0.94);
             resolve({
               base64: compressed,
               mimeType: "image/jpeg",
@@ -363,7 +376,7 @@ export const BillScanner: React.FC<BillScannerProps> = ({
           reader.onload = () =>
             resolve({
               base64: reader.result as string,
-              mimeType: file.type || "image/jpeg",
+              mimeType: file.type?.startsWith("image/") ? file.type : "image/jpeg",
             });
           reader.readAsDataURL(file);
         };
@@ -492,16 +505,14 @@ export const BillScanner: React.FC<BillScannerProps> = ({
           const data = await response.json();
           if (data.success && data.bill) {
             const normalized = normalizeExtractedBill(data.bill);
-            if (hasEssentialBillData(normalized)) {
-              const bill: ExtractedBill = {
-                ...normalized,
-                sourceUrl: URL.createObjectURL(file),
-              };
-              setExtractedBill(bill);
-              setIsScanning(false);
-              setScanFailed(false);
-              return;
-            }
+            const bill: ExtractedBill = {
+              ...normalized,
+              sourceUrl: URL.createObjectURL(file),
+            };
+            setExtractedBill(bill);
+            setIsScanning(false);
+            setScanFailed(false);
+            return;
           }
         }
       } catch (apiErr) {

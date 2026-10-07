@@ -275,13 +275,15 @@ DIRETRIZES DE EXTRAÇÃO PARA FATURAS BRASILEIRAS:
         }
         parts.push({ text: prompt });
 
-        // Try official models from @google/genai guidelines with 35s per-model budget
+        // Fast, high-quota lite models first for instant 1-2s response, with resilient fallbacks
         const modelsToTry = [
-          "gemini-3.8-flash",
-          "gemini-flash-latest",
+          "gemini-3.5-flash-lite",
+          "gemini-flash-lite-latest",
           "gemini-3.1-flash-lite",
+          "gemini-3.8-flash",
         ];
         let parsedData: any = null;
+        const PER_MODEL_TIMEOUT_MS = 12000;
 
         for (const model of modelsToTry) {
           let modelSucceeded = false;
@@ -289,19 +291,17 @@ DIRETRIZES DE EXTRAÇÃO PARA FATURAS BRASILEIRAS:
 
           for (let attempt = 0; attempt <= maxRetries; attempt++) {
             try {
-              const isGemini3 = model.includes("gemini-3");
               const response = await withTimeout(
                 ai.models.generateContent({
                   model,
-                  contents: { parts },
+                  contents: parts,
                   config: {
                     responseMimeType: "application/json",
                     responseSchema: billResponseSchema,
                     maxOutputTokens: 4096,
-                    ...(isGemini3 ? { thinkingConfig: { thinkingLevel: ThinkingLevel.LOW } } : {}),
                   },
                 }),
-                35000,
+                PER_MODEL_TIMEOUT_MS,
                 `Timeout no modelo ${model}`
               );
 
@@ -485,14 +485,18 @@ SUAS DIRETRIZES FUNDAMENTAIS DE RESPOSTA:
       parts: [{ text: m.content }],
     }));
 
-    // Primary models with proven availability and speed from @google/genai guidelines
-    const modelsToTry = ["gemini-3.8-flash", "gemini-flash-latest", "gemini-3.1-flash-lite"];
+    // Fast, responsive models with high availability
+    const modelsToTry = [
+      "gemini-3.5-flash-lite",
+      "gemini-flash-lite-latest",
+      "gemini-3.1-flash-lite",
+      "gemini-3.8-flash",
+    ];
     let reply: string | null = null;
-    let usedModel: string = "gemini-3.8-flash";
+    let usedModel: string = "gemini-3.5-flash-lite";
 
     for (const model of modelsToTry) {
       try {
-        const isGemini3 = model.includes("gemini-3");
         const response = await withTimeout(
           ai.models.generateContent({
             model,
@@ -501,11 +505,10 @@ SUAS DIRETRIZES FUNDAMENTAIS DE RESPOSTA:
               systemInstruction,
               temperature: 0.4,
               maxOutputTokens: 2048,
-              ...(isGemini3 ? { thinkingConfig: { thinkingLevel: ThinkingLevel.LOW } } : {}),
             },
           }),
-          25000,
-          `Timeout de 25s excedido para ${model}`
+          15000,
+          `Timeout de 15s excedido para ${model}`
         );
 
         const text = response.text?.trim() || "";
